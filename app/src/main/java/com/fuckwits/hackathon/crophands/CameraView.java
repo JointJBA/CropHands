@@ -31,6 +31,15 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback
     @Override
     public void surfaceCreated(SurfaceHolder holder)
     {
+        /*if (camera != null) {
+            releaseCamera();
+        }
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }*/
+
         camera = Camera.open();
 
         // Set the Hotfix for Google Glass
