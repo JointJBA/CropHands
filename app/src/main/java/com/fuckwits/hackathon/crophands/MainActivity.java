@@ -10,6 +10,8 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.media.AudioManager;
@@ -26,6 +28,7 @@ import android.widget.AdapterView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -99,7 +102,11 @@ public class MainActivity extends Activity {
             try {
 
                 imageFileOS = getContentResolver().openOutputStream(uriTarget);
-                imageFileOS.write(data);
+                Bitmap originalBmp = BitmapFactory.decodeByteArray(data, 0, data.length);
+                Bitmap bmp = Bitmap.createBitmap(originalBmp, 70, 150, originalBmp.getWidth() - 150, originalBmp.getHeight() - 70);
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                imageFileOS.write(stream.toByteArray());
                 imageFileOS.flush();
                 imageFileOS.close();
 
