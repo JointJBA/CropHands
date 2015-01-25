@@ -10,10 +10,18 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
+
+import java.util.ArrayList;
+
 public class CameraView extends SurfaceView implements SurfaceHolder.Callback
 {
     private SurfaceHolder surfaceHolder = null;
     public Camera camera = null;
+
+
+    // globals
 
     @SuppressWarnings("deprecation")
     public CameraView(Context context)
