@@ -1,4 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="glass_voice_trigger">Let me take a selfie</string>
-</resources>
+<trigger keyword="@string/glass_voice_trigger" />
