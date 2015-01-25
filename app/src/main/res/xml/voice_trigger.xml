@@ -1,2 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<trigger command="CHECK_THIS_OUT" />
+<resources>
+    <string name="glass_voice_trigger">Let me take a selfie</string>
+</resources>
