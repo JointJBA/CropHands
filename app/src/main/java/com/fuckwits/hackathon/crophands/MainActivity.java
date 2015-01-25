@@ -28,10 +28,13 @@ import android.widget.AdapterView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.opencv.core.*;
+
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.MappedByteBuffer;
 
 /**
  * An {@link Activity} showing a tuggable "Hello World!" card.
@@ -138,6 +141,14 @@ public class MainActivity extends Activity {
     }
 
     void processImage(String path) {
+        Bitmap bmp = BitmapFactory.decodeFile(path);
+        Mat mat = new Mat();
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] img = stream.toByteArray();
+        mat.put(0, 0, img);
+        ColorBlobDetector cbd = new ColorBlobDetector();
+        cbd.
         finish();
     }
 
