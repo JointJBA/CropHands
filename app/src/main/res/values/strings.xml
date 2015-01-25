@@ -2,7 +2,6 @@
 <resources>
 
     <string name="app_name">Hand Crop</string>
-    <string name="title_activity_main">Camera</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_main"></string>
 
 </resources>
