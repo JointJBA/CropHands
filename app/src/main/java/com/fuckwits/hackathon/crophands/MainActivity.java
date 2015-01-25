@@ -18,6 +18,7 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.FileObserver;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -28,9 +29,13 @@ import android.widget.AdapterView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
 import org.opencv.core.*;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -52,10 +57,36 @@ public class MainActivity extends Activity {
     private View mView;
     private CameraView cView;
     static final int TAKE_PICTURE_REQUEST = 1;
+    private BaseLoaderCallback mOpenCVCallBack = new BaseLoaderCallback(this) {
+        @Override
+        public void onManagerConnected(int status) {
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS:
+                {
+                    Log.i("BS", "OpenCV loaded successfully");
+                    // Create and set View
+
+                } break;
+                case LoaderCallbackInterface.INIT_FAILED:
+                {
+                    Log.d("WTF", "BS");
+                }
+                default:
+                {
+                    Log.d("WTF", Integer.toString(status));
+                    super.onManagerConnected(status);
+                } break;
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
+        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_10, this, mOpenCVCallBack);
+        if (!OpenCVLoader.initDebug()){
+            Log.d("WTF", "DEAR LORD WHY");
+        }
         cView = new CameraView(this) {
             @Override
             public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
@@ -95,7 +126,6 @@ public class MainActivity extends Activity {
 
 
 
-
     Camera.PictureCallback photoCallback=new Camera.PictureCallback() {
         public void onPictureTaken(byte[] data, Camera camera) {
 
@@ -125,6 +155,7 @@ public class MainActivity extends Activity {
         }
     };
 
+
     void takepicture() {
         cView.releaseCamera();
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -138,18 +169,64 @@ public class MainActivity extends Activity {
             Log.d("MainActivity", path);
             processImage(path);
         }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
-    void processImage(String path) {
-        Bitmap bmp = BitmapFactory.decodeFile(path);
-        Mat mat = new Mat();
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
-        byte[] img = stream.toByteArray();
-        mat.put(0, 0, img);
-        ColorBlobDetector cbd = new ColorBlobDetector();
-        cbd.
-        finish();
+    void processImage(final String picturePath) {
+        final File pictureFile = new File(picturePath);
+
+        if (pictureFile.exists()) {
+            Bitmap bmp = BitmapFactory.decodeFile(picturePath);
+            Mat mat = new Mat();
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] img = stream.toByteArray();
+            mat.put(0, 0, img);
+            ColorBlobDetector cbd = new ColorBlobDetector();
+            cbd.setHsvColor(new Scalar(10, 90, 60, 60));
+            cbd.setColorRadius(new Scalar(10, 60, 60));
+            cbd.process(mat);
+            Log.d("BS", Integer.toString(cbd.getContours().size()));
+            finish();
+            Log.d("Su", "HA");
+        } else {
+            // The file does not exist yet. Before starting the file observer, you
+            // can update your UI to let the user know that the application is
+            // waiting for the picture (for example, by displaying the thumbnail
+            // image and a progress indicator).
+
+            final File parentDirectory = pictureFile.getParentFile();
+            FileObserver observer = new FileObserver(parentDirectory.getPath(),
+                    FileObserver.CLOSE_WRITE | FileObserver.MOVED_TO) {
+                // Protect against additional pending events after CLOSE_WRITE
+                // or MOVED_TO is handled.
+                private boolean isFileWritten;
+
+                @Override
+                public void onEvent(int event, String path) {
+                    if (!isFileWritten) {
+                        // For safety, make sure that the file that was created in
+                        // the directory is actually the one that we're expecting.
+                        File affectedFile = new File(parentDirectory, path);
+                        isFileWritten = affectedFile.equals(pictureFile);
+
+                        if (isFileWritten) {
+                            stopWatching();
+
+                            // Now that the file is ready, recursively call
+                            // processPictureWhenReady again (on the UI thread).
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    processImage(picturePath);
+                                }
+                            });
+                        }
+                    }
+                }
+            };
+            observer.startWatching();
+        }
     }
 
     @Override
