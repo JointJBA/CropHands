@@ -1,3 +1,2 @@
-<!-- For more information about voice trigger, check out: https://developers.google.com/glass/develop/gdk/starting-glassware -->
 <?xml version="1.0" encoding="utf-8"?>
 <trigger command="CHECK_THIS_OUT" />
