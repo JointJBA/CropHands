@@ -174,10 +174,24 @@ public class MainActivity extends Activity {
 
     void processImage(final String picturePath) {
         final File pictureFile = new File(picturePath);
-
+        OutputStream imageFileOS;
         if (pictureFile.exists()) {
-            Bitmap bmp = BitmapFactory.decodeFile(picturePath);
-            Mat mat = new Mat();
+            try {
+                imageFileOS = getContentResolver().openOutputStream(Uri.parse(picturePath));
+                Bitmap originalBmp = BitmapFactory.decodeFile(picturePath);
+                Bitmap bmp = Bitmap.createBitmap(originalBmp, 50, 70, originalBmp.getWidth() - 240, originalBmp.getHeight() - 120);
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                imageFileOS.write(stream.toByteArray());
+                Log.d("WTF","image write");
+                imageFileOS.flush();
+                imageFileOS.close();
+            }
+            catch (Exception e) {
+                Log.d("B", e.getMessage());
+
+            }
+            /*Mat mat = new Mat();
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
             byte[] img = stream.toByteArray();
@@ -188,7 +202,7 @@ public class MainActivity extends Activity {
             cbd.process(mat);
             Log.d("BS", Integer.toString(cbd.getContours().size()));
             finish();
-            Log.d("Su", "HA");
+            Log.d("Su", "HA");*/
         } else {
             // The file does not exist yet. Before starting the file observer, you
             // can update your UI to let the user know that the application is
@@ -243,6 +257,7 @@ public class MainActivity extends Activity {
         if (cView != null) {
             cView.releaseCamera();
         }
+        //finish();
     }
 
 
